@@ -2,8 +2,8 @@
 
 NewsFlow is a modern, clean, and fast web application that aggregates tech news from various sources, provides AI-generated summaries, and allows users to enhance readability with a single click.
 
-![NewsFlow Screenshot](https://picsum.photos/1200/600?grayscale&blur=2)
-_A placeholder image of the NewsFlow interface._
+<img width="1920" height="999" alt="Screenshot_20250827_173725" src="https://github.com/user-attachments/assets/1276db9a-58d4-4917-9652-8aac82aa7dba" />
+<img width="1920" height="999" alt="Screenshot_20250827_173753" src="https://github.com/user-attachments/assets/b27a74a6-f254-4508-84b2-55b701292846" />
 
 ---
 
