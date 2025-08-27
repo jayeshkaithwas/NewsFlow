@@ -2,10 +2,13 @@
 
 import { useMemo } from 'react';
 
-const parseBold = (text: string) => {
-  return text.split(/(\*\*.*?\*\*)/g).map((part, index) => {
+const parseMarkdown = (text: string) => {
+  return text.split(/(\*\*.*?\*\*|\*.*?\*)/g).map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return <strong key={index}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('*') && part.endsWith('*')) {
+      return <em key={index}>{part.slice(1, -1)}</em>;
     }
     return part;
   });
@@ -40,7 +43,7 @@ const AiSummary = ({ summary }: { summary: string }) => {
         if(introParagraph){
             parts.push(
                 <p key="intro" className="my-4 leading-relaxed">
-                  {parseBold(introParagraph.trim())}
+                  {parseMarkdown(introParagraph.trim())}
                 </p>
               );
               introParagraph = '';
@@ -59,7 +62,7 @@ const AiSummary = ({ summary }: { summary: string }) => {
             key={`h2-${parts.length}`}
             className="text-2xl font-bold font-headline mt-8 mb-4 border-b pb-2"
           >
-            {parseBold(line.replace('## ', '').trim())}
+            {parseMarkdown(line.replace('## ', '').trim())}
           </h2>
         );
       } else if (line.startsWith('- ')) {
@@ -69,7 +72,7 @@ const AiSummary = ({ summary }: { summary: string }) => {
         isIntro = false;
         currentListItems.push(
           <li key={`li-${parts.length}-${currentListItems.length}`}>
-            {parseBold(line.replace('- ', '').trim())}
+            {parseMarkdown(line.replace('- ', '').trim())}
           </li>
         );
       } else if (isIntro) {
@@ -79,7 +82,7 @@ const AiSummary = ({ summary }: { summary: string }) => {
         pushList(); // Push any existing list items first
         parts.push(
           <p key={`p-${parts.length}`} className="my-4 leading-relaxed">
-            {parseBold(line.trim())}
+            {parseMarkdown(line.trim())}
           </p>
         );
       }
