@@ -2,7 +2,11 @@ import { cache } from 'react';
 import type { Article } from './types';
 
 const SHEET_ID = '1SGYctcCWYHDxpuzv5o2Hp1uveRuOrnpRJ1DmaSUii7g';
-const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+const ALL_ARTICLES_GID = '0';
+const TODAY_ARTICLES_GID = '1944615086';
+
+const ALL_ARTICLES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${ALL_ARTICLES_GID}`;
+const TODAY_ARTICLES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${TODAY_ARTICLES_GID}`;
 
 function slugify(text: string): string {
   return text
@@ -61,50 +65,64 @@ function parseCSV(text: string): string[][] {
   return rows;
 }
 
-export const getArticles = cache(async (): Promise<Article[]> => {
-  try {
-    const response = await fetch(CSV_URL);
-    if (!response.ok) {
-      throw new Error('Failed to fetch data');
-    }
-    const text = await response.text();
-    const rows = parseCSV(text);
-
-    // Skip header row
-    const dataRows = rows.slice(1);
-
-    return dataRows
-      .map((row, index) => {
-        if (row.length < 6) return null;
-        try {
-          const [pubDate, source, title, link, categoriesStr, aiSummary] = row;
-          return {
-            id: String(index),
-            slug: `${slugify(title)}-${index}`,
-            pubDate,
-            source,
-            title,
-            link,
-            categories: JSON.parse(
-              categoriesStr.replace(/'/g, '"')
-            ),
-            aiSummary,
-          };
-        } catch (e) {
-          console.error(`Error parsing row ${index + 1}:`, row, e);
-          return null;
+const fetchArticles = async (url: string): Promise<Article[]> => {
+    try {
+        const response = await fetch(url, { next: { revalidate: 3600 } }); // Revalidate every hour
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data from ${url}`);
         }
-      })
-      .filter((article): article is Article => article !== null);
-  } catch (error) {
-    console.error('Error fetching or parsing articles:', error);
-    return [];
-  }
+        const text = await response.text();
+        const rows = parseCSV(text);
+    
+        // Skip header row
+        const dataRows = rows.slice(1);
+    
+        return dataRows
+          .map((row, index) => {
+            if (row.length < 6) return null;
+            try {
+              const [pubDate, source, title, link, categoriesStr, aiSummary] = row;
+              return {
+                id: String(index),
+                slug: `${slugify(title)}-${index}`,
+                pubDate,
+                source,
+                title,
+                link,
+                categories: JSON.parse(
+                  categoriesStr.replace(/'/g, '"')
+                ),
+                aiSummary,
+              };
+            } catch (e) {
+              console.error(`Error parsing row ${index + 1}:`, row, e);
+              return null;
+            }
+          })
+          .filter((article): article is Article => article !== null);
+      } catch (error) {
+        console.error('Error fetching or parsing articles:', error);
+        return [];
+      }
+};
+
+export const getAllArticles = cache(async (): Promise<Article[]> => {
+    return fetchArticles(ALL_ARTICLES_URL);
+});
+
+export const getTodaysArticles = cache(async (): Promise<Article[]> => {
+    return fetchArticles(TODAY_ARTICLES_URL);
 });
 
 export const getArticleBySlug = async (
   slug: string
 ): Promise<Article | undefined> => {
-  const articles = await getArticles();
-  return articles.find((article) => article.slug === slug);
+  const allArticles = await getAllArticles();
+  const todaysArticles = await getTodaysArticles();
+  const articles = [...allArticles, ...todaysArticles];
+  
+  // Remove duplicates
+  const uniqueArticles = Array.from(new Map(articles.map(a => [a.slug, a])).values());
+  
+  return uniqueArticles.find((article) => article.slug === slug);
 };
