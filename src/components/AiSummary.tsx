@@ -2,6 +2,15 @@
 
 import { useMemo } from 'react';
 
+const parseBold = (text: string) => {
+  return text.split(/(\*\*.*?\*\*)/g).map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+};
+
 const AiSummary = ({ summary }: { summary: string }) => {
   const elements = useMemo(() => {
     if (!summary) return [];
@@ -31,7 +40,7 @@ const AiSummary = ({ summary }: { summary: string }) => {
         if(introParagraph){
             parts.push(
                 <p key="intro" className="my-4 leading-relaxed">
-                  {introParagraph.trim()}
+                  {parseBold(introParagraph.trim())}
                 </p>
               );
               introParagraph = '';
@@ -50,7 +59,7 @@ const AiSummary = ({ summary }: { summary: string }) => {
             key={`h2-${parts.length}`}
             className="text-2xl font-bold font-headline mt-8 mb-4 border-b pb-2"
           >
-            {line.replace('## ', '').trim()}
+            {parseBold(line.replace('## ', '').trim())}
           </h2>
         );
       } else if (line.startsWith('- ')) {
@@ -60,11 +69,19 @@ const AiSummary = ({ summary }: { summary: string }) => {
         isIntro = false;
         currentListItems.push(
           <li key={`li-${parts.length}-${currentListItems.length}`}>
-            {line.replace('- ', '').trim()}
+            {parseBold(line.replace('- ', '').trim())}
           </li>
         );
       } else if (isIntro) {
         introParagraph += line.trim() + ' ';
+      } else {
+        // This handles paragraphs that are not part of the intro and not list items.
+        pushList(); // Push any existing list items first
+        parts.push(
+          <p key={`p-${parts.length}`} className="my-4 leading-relaxed">
+            {parseBold(line.trim())}
+          </p>
+        );
       }
     }
 
