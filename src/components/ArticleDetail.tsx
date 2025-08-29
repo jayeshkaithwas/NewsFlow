@@ -62,6 +62,14 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
           </div>
         </div>
 
+        <div className="flex flex-wrap gap-2">
+          {article.categories.map((category) => (
+            <Badge key={category} variant="outline">
+              {category}
+            </Badge>
+          ))}
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-4">
           <Button asChild>
             <a href={article.link} target="_blank" rel="noopener noreferrer">
@@ -84,12 +92,14 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
 
         <div className="prose prose-lg dark:prose-invert max-w-none">
           {isImproving && (
-             <Card className="p-6">
-                <CardContent className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="text-muted-foreground">AI is enhancing the summary...</p>
-                </CardContent>
-             </Card>
+            <Card className="p-6">
+              <CardContent className="flex flex-col items-center justify-center gap-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground">
+                  AI is enhancing the summary...
+                </p>
+              </CardContent>
+            </Card>
           )}
           {improvedSummary ? (
             <AiSummary summary={improvedSummary} />
@@ -97,13 +107,6 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
             <AiSummary summary={article.aiSummary} />
           )}
         </div>
-
-        <div className="flex flex-wrap gap-2">
-            {article.categories.map(category => (
-                <Badge key={category} variant="outline">{category}</Badge>
-            ))}
-        </div>
-
       </article>
     </div>
   );
