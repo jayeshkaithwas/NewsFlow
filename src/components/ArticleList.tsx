@@ -19,9 +19,15 @@ interface ArticleListProps {
 export default function ArticleList({ articles }: ArticleListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSource, setSelectedSource] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   const sources = useMemo(() => {
     return ['all', ...Array.from(new Set(articles.map((a) => a.source)))];
+  }, [articles]);
+
+  const categories = useMemo(() => {
+    const allCategories = articles.flatMap((a) => a.categories);
+    return ['all', ...Array.from(new Set(allCategories))];
   }, [articles]);
 
   const filteredArticles = useMemo(() => {
@@ -31,8 +37,13 @@ export default function ArticleList({ articles }: ArticleListProps) {
       )
       .filter((article) =>
         selectedSource === 'all' ? true : article.source === selectedSource
+      )
+      .filter((article) =>
+        selectedCategory === 'all'
+          ? true
+          : article.categories.includes(selectedCategory)
       );
-  }, [articles, searchQuery, selectedSource]);
+  }, [articles, searchQuery, selectedSource, selectedCategory]);
 
   return (
     <div className="space-y-8">
@@ -51,6 +62,18 @@ export default function ArticleList({ articles }: ArticleListProps) {
             {sources.map((source) => (
               <SelectItem key={source} value={source}>
                 {source === 'all' ? 'All Sources' : source}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="Filter by category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category === 'all' ? 'All Categories' : category}
               </SelectItem>
             ))}
           </SelectContent>

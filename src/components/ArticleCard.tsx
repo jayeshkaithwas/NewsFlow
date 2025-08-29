@@ -5,6 +5,7 @@ import {
   Card,
   CardHeader,
   CardTitle,
+  CardContent,
   CardFooter,
 } from '@/components/ui/card';
 import { Badge } from './ui/badge';
@@ -34,8 +35,19 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             {article.title}
           </CardTitle>
         </CardHeader>
+        {article.categories && article.categories.length > 0 && (
+          <CardContent className="py-2">
+            <div className="flex flex-wrap gap-1">
+              {article.categories.slice(0, 3).map((category) => (
+                <Badge key={category} variant="outline" className="text-xs">
+                  {category}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        )}
         <div className="flex-grow" />
-        <CardFooter className="flex justify-between items-center text-sm text-muted-foreground">
+        <CardFooter className="flex justify-between items-center text-sm text-muted-foreground pt-4">
           <Badge variant="secondary">{article.source}</Badge>
           <time dateTime={article.pubDate}>{formattedDate}</time>
         </CardFooter>
