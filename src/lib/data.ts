@@ -82,12 +82,13 @@ const fetchArticles = async (url: string): Promise<Article[]> => {
             if (row.length < 6) return null;
             try {
               const [pubDate, source, title, link, categoriesStr, aiSummary] = row;
+              const cleanedTitle = title.replace(/&#8217;/g, "'");
               return {
                 id: String(index),
-                slug: `${slugify(title)}-${index}`,
+                slug: `${slugify(cleanedTitle)}-${index}`,
                 pubDate,
                 source,
-                title,
+                title: cleanedTitle,
                 link,
                 categories: JSON.parse(
                   categoriesStr.replace(/'/g, '"')
